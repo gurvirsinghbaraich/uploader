@@ -4,8 +4,13 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
+	// Local packages
 	"github.com/gurvirsinghbaraich/uploader/internal/utils"
+
+	// Downloaded packages
+	// "github.com/go-git/go-git/plumbing/transport/git"
+	"github.com/go-git/go-git/v5"
+	"github.com/gofiber/fiber/v2"
 )
 
 func DeployHandler(c *fiber.Ctx) error {
@@ -21,15 +26,29 @@ func DeployHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Github Repository URL is invalid!")
 	}
 
-	// Generating a random deploymentID
+	// Generating a random deploymentPath
 	deploymentID := utils.GenerateRandomString()
+	deploymentPath := "deployments/" + deploymentID
 
 	// Creating a directory for the current deployment
-	err := os.Mkdir(deploymentID, 0755)
+	err := os.Mkdir(deploymentPath, 0755)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).SendString("Hello World!")
+	// Clonning the Github Repository into it's respective deployment directory
+	_, err = git.PlainClone(deploymentPath, false, &git.CloneOptions{
+		URL: repoURL,
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
+
+	// TODO: Upload the downloaded source code to S3
+	// Delete the downloaded source code from the server
+	os.RemoveAll(deploymentPath)
+
+	return c.Status(fiber.StatusOK).SendString(deploymentID)
 }
