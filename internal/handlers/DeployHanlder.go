@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 
@@ -28,7 +29,7 @@ func DeployHandler(c *fiber.Ctx) error {
 
 	// Generating a random deploymentPath
 	deploymentID := utils.GenerateRandomString()
-	deploymentPath := "deployments/" + deploymentID
+	deploymentPath := fmt.Sprintf("deployments/%s", deploymentID)
 
 	// Creating a directory for the current deployment
 	err := os.Mkdir(deploymentPath, 0755)
@@ -46,7 +47,12 @@ func DeployHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
 
-	// TODO: Upload the downloaded source code to S3
+	// Zip the downloaded files
+	_ = utils.ZipDirectory(deploymentPath)
+
+	// Upload files to Amazon S3 Object Storage
+	// _, err = utils.UploadFilesToS3()
+
 	// Delete the downloaded source code from the server
 	os.RemoveAll(deploymentPath)
 
