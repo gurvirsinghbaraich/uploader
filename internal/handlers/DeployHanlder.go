@@ -9,12 +9,12 @@ import (
 	"github.com/gurvirsinghbaraich/uploader/internal/utils"
 
 	// Downloaded packages
-	// "github.com/go-git/go-git/plumbing/transport/git"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-git/go-git/v5"
 	"github.com/gofiber/fiber/v2"
 )
 
-func DeployHandler(c *fiber.Ctx) error {
+func DeployHandler(c *fiber.Ctx, uploader *s3manager.Uploader) error {
 	// Read the Github Repository URL from the request body
 	repoURL := string(c.Body())
 
@@ -30,6 +30,7 @@ func DeployHandler(c *fiber.Ctx) error {
 	// Generating a random deploymentPath
 	deploymentID := utils.GenerateRandomString()
 	deploymentPath := fmt.Sprintf("deployments/%s", deploymentID)
+	deploymentZipFilePath := fmt.Sprintf("%s.zip", deploymentPath)
 
 	// Creating a directory for the current deployment
 	err := os.Mkdir(deploymentPath, 0755)
@@ -48,13 +49,26 @@ func DeployHandler(c *fiber.Ctx) error {
 	}
 
 	// Zip the downloaded files
-	_ = utils.ZipDirectory(deploymentPath)
+	err = utils.ZipDirectory(deploymentPath)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
 
 	// Upload files to Amazon S3 Object Storage
-	// _, err = utils.UploadFilesToS3()
+	err = utils.UploadFilesToS3(utils.UploadConfig{
+		BucketName: "x-hosting",
+		FilePath:   deploymentZipFilePath,
+	}, uploader)
+	fmt.Printf("Uploaded %s to S3\n", deploymentZipFilePath)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
 
 	// Delete the downloaded source code from the server
 	os.RemoveAll(deploymentPath)
+	os.RemoveAll(deploymentZipFilePath)
+	fmt.Printf("Removed %s, %s from server\n\n", deploymentPath, deploymentZipFilePath)
 
 	return c.Status(fiber.StatusOK).SendString(deploymentID)
 }

@@ -12,7 +12,6 @@ import (
 func ZipDirectory(folderPath string) error {
 	// ZipFile path
 	zipFile := fmt.Sprintf("%s.zip", folderPath)
-	fmt.Println(zipFile)
 
 	// Creating a zip archive
 	archive, err := os.Create(zipFile)

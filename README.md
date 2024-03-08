@@ -9,12 +9,7 @@ This is a Go module that serves as a deployment server for the X-Host project. I
 - Generates random deployment IDs
 - Clones GitHub repositories using the go-git library
 - Creates ZIP archives of the cloned code
-- Uploads ZIP archives to Amazon S3 Object Storage (not implemented yet)
-- Returns deployment IDs to clients
-
-### TODO
-
-- Implement Amazon S3 Object Storage upload functionality
+- Uploads ZIP archives to Amazon S3 Object Storage 
 
 ### Contributing
 
