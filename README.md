@@ -1,4 +1,4 @@
-# X-Host Deployment Server
+# X-Host Upload Server
 
 This is a Go module that serves as a deployment server for the X-Host project. It is responsible for cloning GitHub repositories, creating ZIP archives of the cloned code, and uploading the archives to Amazon S3 Object Storage.
 
