@@ -19,7 +19,7 @@ func main() {
 	// Connecting to AWS S3
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String("ap-south-1"),
-		Credentials: credentials.NewSharedCredentials("", ""),
+		Credentials: credentials.NewSharedCredentials(".aws/credentials", "default"),
 	})
 
 	uploader := s3manager.NewUploader(sess)
